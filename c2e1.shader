@@ -30,7 +30,7 @@ Shader "CgTutorial/C2E1v"{
 
             sampler2D _MainTexture;
 
-            C2E1v_Output green(float2 position : POSITION){
+            C2E1v_Output green(float4 position : POSITION){
               C2E1v_Output OUT;
               OUT.position = float4(position,0,1);
               OUT.color = float4(0, 1, 0, 1);
@@ -39,7 +39,8 @@ Shader "CgTutorial/C2E1v"{
 
             v2f vert(appdata IN){
               v2f OUT1; C2E1v_Output OUT2;
-              OUT2 = green(float2(IN.position.x,IN.position.y));
+              // OUT2 = green(float2(IN.vertex.x,IN.vertex.y));
+              OUT2 = green(IN.vertex)
               OUT1.position = OUT2.position;
               OUT1.uv = IN.uv;
               OUT1.color = OUT2.color;
