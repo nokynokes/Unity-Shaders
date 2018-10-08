@@ -46,13 +46,16 @@ Shader "Custom/Kaleidoscope" {
 
         v2f vert(appdata v) {
           v2f o;
-          o.pos = UnityObjectToClipPos(v.vertex);
+        //  o.pos = UnityObjectToClipPos(v.vertex);
+          o.pos = float4(v.vertex.x * 1, -v.vertex.y * 1, UNITY_NEAR_CLIP_VALUE, 1);
+          #if UNITY_SINGLE_PASS_STEREO
+            o.vertex = float4(v.vertex.x * 1 + 0.2 * lerp(1,-1,unity_StereoEyeIndex), -v.vertex.y * 1, UNITY_NEAR_CLIP_VALUE, 1);
+          #endif
           o.grabPos = ComputeGrabScreenPos(o.pos);
           return o;
         }
 
         fixed4 frag(v2f IN) : SV_Target {
-          if(unity_StereoEyeIndex == 0){
             float2 p = (IN.grabPos.xy/IN.grabPos.w);
             float r = length(p);
             float a = atan2(p.x,p.y) + (_Angle * ( 0.5 * sin(_Time.y/100.0) + 1 ));
@@ -65,20 +68,6 @@ Shader "Custom/Kaleidoscope" {
             col.b = col.a - col.b;
             //col.g = col.a  - col.g;
             return lerp(tex2D(_SceneBefore,IN.grabPos.xy/IN.grabPos.w), col, -1.0);
-          } else {
-            float2 p = (IN.grabPos.xy/IN.grabPos.w);
-            float r = length(p);
-            float a = atan2(p.x,p.y) + (_Angle * ( 0.5 * sin(_Time.y/100.0) + 1 ));
-            float tau = 2.0 * 3.12416;
-            a = mod(a, tau/_Sides);
-            a = abs(a - tau/_Sides);
-            p = r * float2(cos(a),sin(a));
-            fixed4 col = tex2D(_SceneBefore, p);
-            col.r = col.a - col.r;
-            col.b = col.a - col.b;
-            //col.g = col.a  - col.g;
-            return lerp(tex2D(_SceneBefore,IN.grabPos.xy/IN.grabPos.w),col, -1.0);
-          }
         }
 
 
