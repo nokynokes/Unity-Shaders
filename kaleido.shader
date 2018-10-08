@@ -10,8 +10,10 @@ Shader "Custom/Kaleidoscope" {
       "RenderType"="Transparent"
     }
     LOD 200
-    Cull Off
+    Cull Off ZTest Always
     GrabPass{"_SceneBefore"}
+
+
 
     Pass {
       CGPROGRAM
@@ -33,9 +35,10 @@ Shader "Custom/Kaleidoscope" {
 
         //sampler2D _MainTex;
         sampler2D _SceneBefore;
-      //  sampler2D _WorldSpaceNormal;
+        //sampler2D _WorldSpaceNormal;
         float _Sides;
         float _Angle;
+
 
         float mod(float x, float y) {
           return x - y * floor(x/y);
@@ -49,14 +52,33 @@ Shader "Custom/Kaleidoscope" {
         }
 
         fixed4 frag(v2f IN) : SV_Target {
-          float2 p = IN.grabPos.xy / IN.grabPos.w;
-          float r = length(p);
-          float a = atan2(p.x,p.y) + (_Angle * ( 0.5 * sin(_Time.y/100.0) + 1 ));
-          float tau = 2.0 * 3.12416;
-          a = mod(a, tau/_Sides);
-          a = abs(a - tau/_Sides/2.0);
-          p = r * float2(cos(a),sin(a));
-          return tex2D(_SceneBefore, p);
+          if(unity_StereoEyeIndex == 0){
+            float2 p = (IN.grabPos.xy/IN.grabPos.w);
+            float r = length(p);
+            float a = atan2(p.x,p.y) + (_Angle * ( 0.5 * sin(_Time.y/100.0) + 1 ));
+            float tau = 2.0 * 3.12416;
+            a = mod(a, tau/_Sides);
+            a = abs(a - tau/_Sides);
+            p = r * float2(cos(a),sin(a));
+            fixed4 col = tex2D(_SceneBefore, p);
+            col.r = col.a - col.r;
+            col.b = col.a - col.b;
+            //col.g = col.a  - col.g;
+            return lerp(tex2D(_SceneBefore,IN.grabPos.xy/IN.grabPos.w), col, -1.0);
+          } else {
+            float2 p = (IN.grabPos.xy/IN.grabPos.w);
+            float r = length(p);
+            float a = atan2(p.x,p.y) + (_Angle * ( 0.5 * sin(_Time.y/100.0) + 1 ));
+            float tau = 2.0 * 3.12416;
+            a = mod(a, tau/_Sides);
+            a = abs(a - tau/_Sides);
+            p = r * float2(cos(a),sin(a));
+            fixed4 col = tex2D(_SceneBefore, p);
+            col.r = col.a - col.r;
+            col.b = col.a - col.b;
+            //col.g = col.a  - col.g;
+            return lerp(tex2D(_SceneBefore,IN.grabPos.xy/IN.grabPos.w),col, -1.0);
+          }
         }
 
 
